@@ -1,5 +1,7 @@
 ﻿using DSharpPlus;
 using DSharpPlus.Entities;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Text;
 
@@ -7,14 +9,18 @@ namespace JLO_BOT
 {
     public class GameState
     {
+        [BsonIgnore]
+        public ObjectId Id { get; set; }
         public World World { get; set; }
 
+        [BsonIgnore]
         public World[] Worlds = new World[]
         {
             new WorldHub(),
             new World1(),
             new World2(),
         };
+
         public int Floor { get; set; }
         public Enemy[] CurrentEnemies { get; set; }
         public Player Player { get; set; }
@@ -80,6 +86,7 @@ namespace JLO_BOT
                     break;
             }
         }
+
 
         public DiscordMessageBuilder LoadWorldHub()
         {
@@ -179,7 +186,8 @@ namespace JLO_BOT
 
         public DiscordMessageBuilder LoadWorld()
         {
-            CurrentEnemies = World.CurrentEnemies(Floor);
+            if(CurrentEnemies == null)
+                CurrentEnemies = World.CurrentEnemies(Floor);
             var message = new DiscordMessageBuilder()
                 .AddEmbed(new DiscordEmbedBuilder()
                     .WithColor(World.Color)

@@ -1,8 +1,11 @@
 ﻿using DSharpPlus.Entities;
+using MongoDB.Bson.Serialization.Attributes;
 
 
 namespace JLO_BOT
 {
+    [BsonDiscriminator(RootClass = true)]
+    [BsonKnownTypes(typeof(World1), typeof(World2), typeof(WorldHub))]
     public abstract class World
     {
         public abstract Enemy[][] AllFloorEnemies { get; }

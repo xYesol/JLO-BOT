@@ -1,16 +1,8 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
-using System.Collections.Generic;
-using DSharpPlus.Entities;
 using System.Linq;
-using System.Numerics;
-using System.Text;
 using System.Threading.Tasks;
-using static JLO_BOT.Program;
-using System.Dynamic;
-using System.IO;
-using DSharpPlus;
 
 
 namespace JLO_BOT
@@ -61,6 +53,44 @@ namespace JLO_BOT
 
         }
 
+        public static void UpdateGameState(GameState gameState, ulong userId)
+        {
+            try
+            {
+                var db = MongoClient.GetDatabase("JLO-Database");
+                var coll = db.GetCollection<GameState>("gamestates");
+
+                var filter = Builders<GameState>.Filter.Eq("Player.UserId", Convert.ToInt64(userId));
+
+                // Replace the existing document if it exists, otherwise insert a new one
+                var result = coll.ReplaceOne(filter, gameState, new ReplaceOptions { IsUpsert = true });
+
+                if (result.IsAcknowledged)
+                {
+                    if (result.ModifiedCount > 0)
+                    {
+                        Console.WriteLine($"World `{gameState.World.Name}` successfully updated");
+                    }
+                    else if (result.UpsertedId != null)
+                    {
+                        Console.WriteLine($"World `{gameState.World.Name}` successfully created");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"No changes were made to the world `{gameState.World.Name}`");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Operation was not acknowledged");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+
         public static Player GetPlayerById(ulong playerId)
         {
             var db = MongoClient.GetDatabase("JLO-Database");
@@ -69,8 +99,23 @@ namespace JLO_BOT
             // Define a filter to find a player with the given Id
             var filter = Builders<Player>.Filter.Eq(p => p.UserId, playerId);
 
-            // Find the player with the given ObjectId
+            // Find the player with the given playerId
             return coll.Find(filter).FirstOrDefault();
+        }
+
+        public static GameState GetGameStateByUserId(ulong userId)
+        {
+            var db = MongoClient.GetDatabase("JLO-Database");
+            var coll = db.GetCollection<GameState>("gamestates");
+
+            // Define a filter to find a player with the given Id
+            var filter = Builders<GameState>.Filter.Eq("Player.UserId", Convert.ToInt64(userId));
+            var projection = Builders<GameState>.Projection.Exclude("_id");
+            // Find the player with the given playerId
+            var document = coll.Find(filter).Project<GameState>(projection).FirstOrDefault();
+    
+
+            return document;
         }
 
         public static void UpdateWorldFloorsCleared(ulong playerId, int world, int currentFloor)

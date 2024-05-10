@@ -19,7 +19,7 @@ namespace JLO_BOT.server.commands
             Program.GameState = new GameState(0, discordUser);
             var message = Program.GameState.LoadWorldHub();
             await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(message.Embed).AddComponents(message.Components));
-
+            Server.UpdateGameState(Program.GameState, discordUser.Id);
         }
 
     }

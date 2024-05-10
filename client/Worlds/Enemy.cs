@@ -1,5 +1,8 @@
-﻿namespace JLO_BOT
+﻿using MongoDB.Bson.Serialization.Attributes;
+
+namespace JLO_BOT
 {
+    [BsonKnownTypes(typeof(AssassinEnemy), typeof(BlobEnemy), typeof(CactusEnemy), typeof(SmileyBossEnemy), typeof(SunflowerEnemy))]
     public abstract class Enemy
     {
         public abstract string Name { get; }

@@ -1,7 +1,9 @@
 ﻿using DSharpPlus.Entities;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace JLO_BOT
 {
+    [BsonDiscriminator("World2")]
     public class World2 : World
     {
         public Enemy[][] allFloorEnemies = new Enemy[][]

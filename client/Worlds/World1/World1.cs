@@ -1,9 +1,12 @@
 ﻿using DSharpPlus.Entities;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace JLO_BOT
 {
+    [BsonDiscriminator("World1")]
     public class World1 : World
     {
+        [BsonIgnore]
         public Enemy[][] allFloorEnemies = new Enemy[][]
         {
             new Enemy[] { new BlobEnemy(), new BlobEnemy()},
@@ -15,13 +18,20 @@ namespace JLO_BOT
 
         public override Enemy[][] AllFloorEnemies => allFloorEnemies;
 
-        public override string Name => "World 1";
-        public override int WorldID => 1;
+        public string name = "World 1";
+        public override string Name => name;
 
 
-        public override int Floor => 1;
-        public override int MaxFloors => 5;
+        public int worldID = 1;
+        public override int WorldID => worldID;
 
+
+        public int floor = 1;
+        public override int Floor => floor;
+
+
+        public int maxFloors = 5;
+        public override int MaxFloors => maxFloors;
 
         public override DiscordColor Color => DiscordColor.Green;
 

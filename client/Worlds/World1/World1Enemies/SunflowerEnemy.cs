@@ -1,5 +1,9 @@
-﻿namespace JLO_BOT
+﻿using MongoDB.Bson.Serialization.Attributes;
+
+namespace JLO_BOT
 {
+    [BsonDiscriminator("SunflowerEnemy")]
+
     public class SunflowerEnemy : Enemy
     {
         public override string Name => "Sunflower";

@@ -2,6 +2,7 @@
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using JLO_BOT.server.commands;
+using MongoDB.Bson.Serialization;
 using System;
 using System.Threading.Tasks;
 
@@ -42,6 +43,8 @@ namespace JLO_BOT
 
         public static async Task Client_ComponentInteractionCreated(DiscordClient s, DSharpPlus.EventArgs.ComponentInteractionCreateEventArgs e)
         {
+            GameState = Server.GetGameStateByUserId(e.User.Id);
+
             switch (e.Interaction.Data.CustomId)
             {
                 case "targetEnemy0":
@@ -91,12 +94,14 @@ namespace JLO_BOT
                         new DiscordInteractionResponseBuilder().WithContent($"how did you get here...\n{e.User.Mention} has pressed {e.Interaction.Data.CustomId}"));
                     break;
             }
+            Server.UpdateGameState(GameState, e.Interaction.User.Id);
         }
 
         public static async Task TargetEnemySequence(DiscordClient s, DSharpPlus.EventArgs.ComponentInteractionCreateEventArgs e, int enemyID)
         {
             PlayerAttackedEnemy(enemyID);
             GameState.AttackPhase = true;
+
             await DisplayGame(s, e);
 
             bool advanceToNextFloor = false;
@@ -120,6 +125,8 @@ namespace JLO_BOT
 
             if (advanceToNextFloor)
                 await AdvanceFloor(s, e);
+
+            Server.UpdateGameState(GameState, e.Interaction.User.Id);
         }
 
         public static async Task DisplayInventory(DiscordClient s, DSharpPlus.EventArgs.ComponentInteractionCreateEventArgs e)
@@ -132,6 +139,7 @@ namespace JLO_BOT
 
         public static async Task DisplayHub(DiscordClient s, DSharpPlus.EventArgs.ComponentInteractionCreateEventArgs e)
         {
+
             GameState = new GameState(0, e.Interaction.User);
             var message = GameState.LoadWorldHub();
             await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder()
@@ -157,6 +165,8 @@ namespace JLO_BOT
         {
             GameState = new GameState(worldNumber, e.Interaction.User);
             await DisplayGame(s, e);
+            Server.UpdateGameState(GameState, e.Interaction.User.Id);
+
         }
 
         public static async Task GameOver(DiscordClient s, DSharpPlus.EventArgs.ComponentInteractionCreateEventArgs e)
@@ -181,6 +191,7 @@ namespace JLO_BOT
             Server.UpdateWorldFloorsCleared(e.User.Id, GameState.World.WorldID, GameState.Floor);
             GameState.Floor++;
             GameState.Player.CurrentHealth = GameState.Player.MaxHealth;
+            GameState.CurrentEnemies = GameState.World.CurrentEnemies(GameState.Floor);
             await UpdateGame(s, e);
         }
 
@@ -208,6 +219,7 @@ namespace JLO_BOT
         public static void PlayerAttackedEnemy(int enemyID)
         {
             GameState.CurrentEnemies[enemyID].Health -= GameState.Player.AttackDamage;
+
             if (GameState.CurrentEnemies[enemyID].Health < 0)
                 GameState.CurrentEnemies[enemyID].Health = 0;
         }
